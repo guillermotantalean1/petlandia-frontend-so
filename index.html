@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Petlandia</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Petlandia</h1>
+    <nav>
+      <button onclick="mostrarSeccion('usuarios')">Usuarios</button>
+      <button onclick="mostrarSeccion('productos')">Productos</button>
+      <button onclick="mostrarSeccion('mascotas')">Mascotas</button>
+      <button onclick="mostrarSeccion('ordenes')">Órdenes</button>
+      <button onclick="mostrarSeccion('donaciones')">Donaciones</button>
+      <button onclick="mostrarSeccion('asociaciones')">Asociaciones</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="usuarios" class="seccion active">
+      <h2>Usuarios</h2>
+      <form onsubmit="crearUsuario(event)">
+        <input type="text" id="nombreUsuario" placeholder="Nombre" required />
+        <input type="email" id="correoUsuario" placeholder="Correo" required />
+        <button type="submit">Crear Usuario</button>
+      </form>
+      <ul id="usuarios-lista"></ul>
+    </section>
+
+    <section id="productos" class="seccion">
+      <h2>Productos</h2>
+      <form onsubmit="crearProducto(event)">
+        <input type="text" id="nombreProducto" placeholder="Nombre producto" required />
+        <input type="number" id="precioProducto" placeholder="Precio" required />
+        <button type="submit">Añadir Producto</button>
+      </form>
+      <ul id="productos-lista"></ul>
+    </section>
+
+    <section id="mascotas" class="seccion">
+      <h2>Mascotas</h2>
+      <form onsubmit="crearMascota(event)">
+        <input type="text" id="nombreMascota" placeholder="Nombre mascota" required />
+        <input type="text" id="tipoMascota" placeholder="Tipo" required />
+        <input type="text" id="razaMascota" placeholder="Raza" required />
+        <button type="submit">Añadir Mascota</button>
+      </form>
+      <ul id="mascotas-lista"></ul>
+    </section>
+
+    <section id="ordenes" class="seccion">
+      <h2>Órdenes</h2>
+      <form onsubmit="crearOrden(event)">
+        <input type="number" id="totalOrden" placeholder="Total" required />
+        <input type="text" id="estadoOrden" placeholder="Estado" required />
+        <button type="submit">Crear Orden</button>
+      </form>
+      <ul id="ordenes-lista"></ul>
+    </section>
+
+    <section id="donaciones" class="seccion">
+      <h2>Donaciones</h2>
+      <form onsubmit="crearDonacion(event)">
+        <input type="number" id="montoDonacion" placeholder="Monto" required />
+        <button type="submit">Crear Donación</button>
+      </form>
+      <ul id="donaciones-lista"></ul>
+    </section>
+
+    <section id="asociaciones" class="seccion">
+      <h2>Asociaciones</h2>
+      <form onsubmit="crearAsociacion(event)">
+        <input type="text" id="nombreAsociacion" placeholder="Nombre asociación" required />
+        <button type="submit">Crear Asociación</button>
+      </form>
+      <ul id="asociaciones-lista"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Petlandia</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
