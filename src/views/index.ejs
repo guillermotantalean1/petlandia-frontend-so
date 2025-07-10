@@ -1,0 +1,26 @@
+    <div class="container mt-4">
+        <h1 class="mb-4">Productos para Mascotas</h1>
+        
+        <div class="row">
+            <% products.forEach(function(product) { %>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <a href="/producto/<%= product._id %>" class="text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= product.name %></h5>
+                                <p class="card-text text-primary">S/. <%= product.price %></p>
+                                <p class="card-text"><%= product.description %></p>
+                            </div>
+                        </a>
+                        <div class="card-footer bg-white border-top-0">
+                            <button class="btn btn-primary w-100" onclick="addToCart('<%= product._id %>')">
+                                Añadir al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <script src="/js/cart.js"></script>

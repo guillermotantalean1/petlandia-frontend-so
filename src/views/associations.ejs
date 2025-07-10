@@ -1,0 +1,71 @@
+    <div class="container mt-4">
+        <h1 class="mb-4">Asociaciones de Ayuda Animal</h1>
+        
+        <div class="row">
+        <% if (associations && associations.length > 0) { %>
+            <% associations.forEach(function(association) { %>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= association.name %></h5>
+                            <p class="card-text"><%= association.description %></p>
+                            <% if (association.phone) { %>
+                                <p class="card-text"><small class="text-muted">📞 <%= association.phone %></small></p>
+                            <% } %>
+                            <% if (association.email) { %>
+                                <p class="card-text"><small class="text-muted">✉️ <%= association.email %></small></p>
+                            <% } %>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" onclick="showDonationModal('<%= association._id %>')">
+                                    Hacer donación
+                                </button>
+                                <% if (association.website) { %>
+                                    <a href="<%= association.website %>" target="_blank" class="btn btn-outline-primary">
+                                        Visitar sitio web
+                                    </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    No hay asociaciones registradas en este momento.
+                </div>
+            </div>
+        <% } %>
+        </div>
+    </div>
+
+    <!-- Modal de Donación -->
+    <div class="modal fade" id="donationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Realizar Donación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="donationForm">
+                        <input type="hidden" id="associationId" name="associationId">
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Monto a donar (S/.)</label>
+                            <input type="number" class="form-control" id="amount" name="amount" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mensaje (opcional)</label>
+                            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitDonation()">Donar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/associations.js"></script> 

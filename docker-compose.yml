@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  webapp:
+    container_name: contenedor_app
+    restart: always
+    build: .
+    ports:
+      - "4000:4000"
+    links: 
+      - database
+    environment:
+      - MONGODB_URI=mongodb://database:27017/petlandia
+    depends_on:
+      - database
+  database:
+    container_name: contenedor_db_petlandia
+    image: mongo
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
