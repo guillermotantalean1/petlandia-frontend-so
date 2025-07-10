@@ -49,9 +49,7 @@ app.set("layout extractScripts", true);
 app.set("layout extractStyles", true);
 
 // Rutas
-const UserModel = require('./models/userModel');
 app.use('/', require('./routes/index.routes'));
-app.use('/', require('./controllers/ProductController'));
 
 // Manejo de errores 404
 app.use((req, res, next) => {

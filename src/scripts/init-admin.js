@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const UserModel = require('../models/userModel');
 
 const createAdminUser = async () => {

@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const router = Router();
+const express = require('express');
+const router = express.Router();
 
 const UserModel = require("../models/userModel");
 const ProductModel = require("../models/productModel");
@@ -8,7 +8,7 @@ const OrderModel = require("../models/orderModel");
 const DonationModel = require("../models/donationModel");
 const AssociationModel = require("../models/associationModel");
 
-// Middleware de autenticación de admin
+// Middleware para verificar si es admin
 const isAdmin = (req, res, next) => {
     if (req.session?.user?.role === 'admin') {
         next();
@@ -135,26 +135,32 @@ router.get("/admin/login", (req, res) => {
         res.redirect('/admin');
     } else {
         res.render("admin-login", {
+            error: null,
             user: req.session?.user || null,
             isAdmin: false
         });
     }
 });
 
-router.post("/api/admin/login", (req, res) => {
+router.post("/admin/login", async (req, res) => {
     const { username, password } = req.body;
-    // Autenticación simple: si el usuario y contraseña son "admin", se le da acceso
+    // Validación simple para admin
     if (username === 'admin' && password === 'admin') {
         req.session.user = {
             username: 'admin',
             role: 'admin'
         };
-        res.json({ success: true });
+        res.redirect('/admin');
     } else {
-        res.status(401).json({ success: false, message: 'Invalid credentials' });
+        res.render('admin-login', { 
+            error: 'Credenciales incorrectas',
+            user: null,
+            isAdmin: false
+        });
     }
 });
 
+// Panel de administración
 router.get("/admin", isAdmin, async (req, res) => {
     try {
         const [products, users] = await Promise.all([

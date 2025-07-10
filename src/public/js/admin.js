@@ -1,23 +1,24 @@
-// Global variables to store current items
+// Variables globales para almacenar los items actuales
 let currentProducts = [];
 let currentAssociations = [];
 let currentOrders = [];
 
-// Load data when page loads
+// Cargar datos cuando la página se carga
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
     loadAssociations();
     loadOrders();
 });
 
-// Products Management
+// Gestión de Productos
 async function loadProducts() {
     try {
         const response = await axios.get('/api/products');
         currentProducts = response.data;
         renderProducts();
     } catch (error) {
-        alert('Error loading products');
+        console.error('Error cargando productos:', error);
+        alert('Error al cargar productos');
     }
 }
 
@@ -30,147 +31,153 @@ function renderProducts() {
             <td>${product.stock}</td>
             <td>${product.status}</td>
             <td>
-                <button class="btn btn-sm btn-primary" onclick="editProduct('${product._id}')">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product._id}')">Delete</button>
+                <button class="btn btn-sm btn-primary" onclick="editProduct('${product._id}')">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product._id}')">Eliminar</button>
             </td>
         </tr>
     `).join('');
 }
 
-function showProductModal(productId = null) {
-    const product = productId ? currentProducts.find(p => p._id === productId) : null;
-    document.getElementById('productId').value = product?._id || '';
-    document.getElementById('productName').value = product?.name || '';
-    document.getElementById('productDescription').value = product?.description || '';
-    document.getElementById('productPrice').value = product?.price || '';
-    document.getElementById('productStock').value = product?.stock || '';
-    document.getElementById('productStatus').value = product?.status || 'active';
-    
-    const modal = new bootstrap.Modal(document.getElementById('productModal'));
-    modal.show();
-}
-
 function editProduct(productId) {
-    showProductModal(productId);
+    const product = currentProducts.find(p => p._id === productId);
+    if (product) {
+        document.getElementById('productId').value = product._id;
+        document.getElementById('productName').value = product.name;
+        document.getElementById('productDescription').value = product.description;
+        document.getElementById('productPrice').value = product.price;
+        document.getElementById('productStock').value = product.stock;
+        document.getElementById('productStatus').value = product.status;
+        
+        const modal = new bootstrap.Modal(document.getElementById('productModal'));
+        modal.show();
+    }
 }
 
 async function saveProduct() {
-    const productData = {
-        name: document.getElementById('productName').value,
-        description: document.getElementById('productDescription').value,
-        price: parseFloat(document.getElementById('productPrice').value),
-        stock: parseInt(document.getElementById('productStock').value),
-        status: document.getElementById('productStatus').value
-    };
-
-    const productId = document.getElementById('productId').value;
-
     try {
+        const productData = {
+            name: document.getElementById('productName').value,
+            description: document.getElementById('productDescription').value,
+            price: parseFloat(document.getElementById('productPrice').value),
+            stock: parseInt(document.getElementById('productStock').value),
+            status: document.getElementById('productStatus').value
+        };
+
+        const productId = document.getElementById('productId').value;
+
         if (productId) {
             await axios.put(`/api/products/${productId}`, productData);
         } else {
             await axios.post('/api/products', productData);
         }
+
         bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+        document.getElementById('productForm').reset();
         loadProducts();
     } catch (error) {
-        alert('Error saving product');
+        console.error('Error guardando producto:', error);
+        alert('Error al guardar producto');
     }
 }
 
 async function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
-    try {
+    if (confirm('¿Está seguro de que desea eliminar este producto?')) {
+        try {
             await axios.delete(`/api/products/${productId}`);
             loadProducts();
-    } catch (error) {
-            alert('Error deleting product');
+        } catch (error) {
+            console.error('Error eliminando producto:', error);
+            alert('Error al eliminar producto');
         }
     }
 }
 
-// Associations Management
+// Gestión de Asociaciones
 async function loadAssociations() {
     try {
         const response = await axios.get('/api/associations');
         currentAssociations = response.data;
         renderAssociations();
     } catch (error) {
-        alert('Error loading associations');
+        console.error('Error cargando asociaciones:', error);
+        alert('Error al cargar asociaciones');
     }
 }
 
 function renderAssociations() {
     const tbody = document.getElementById('associationsTableBody');
     tbody.innerHTML = currentAssociations.map(association => `
-            <tr>
-                <td>${association.name}</td>
-                <td>${association.description}</td>
+        <tr>
+            <td>${association.name}</td>
+            <td>${association.description}</td>
             <td>${association.status}</td>
-                <td>
-                <button class="btn btn-sm btn-primary" onclick="editAssociation('${association._id}')">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteAssociation('${association._id}')">Delete</button>
-                </td>
-            </tr>
-        `).join('');
-}
-
-function showAssociationModal(associationId = null) {
-    const association = associationId ? currentAssociations.find(a => a._id === associationId) : null;
-    document.getElementById('associationId').value = association?._id || '';
-    document.getElementById('associationName').value = association?.name || '';
-    document.getElementById('associationDescription').value = association?.description || '';
-    document.getElementById('associationStatus').value = association?.status || 'active';
-        
-    const modal = new bootstrap.Modal(document.getElementById('associationModal'));
-    modal.show();
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="editAssociation('${association._id}')">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteAssociation('${association._id}')">Eliminar</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
 function editAssociation(associationId) {
-    showAssociationModal(associationId);
+    const association = currentAssociations.find(a => a._id === associationId);
+    if (association) {
+        document.getElementById('associationId').value = association._id;
+        document.getElementById('associationName').value = association.name;
+        document.getElementById('associationDescription').value = association.description;
+        document.getElementById('associationStatus').value = association.status;
+        
+        const modal = new bootstrap.Modal(document.getElementById('associationModal'));
+        modal.show();
+    }
 }
 
 async function saveAssociation() {
-    const associationData = {
-        name: document.getElementById('associationName').value,
-        description: document.getElementById('associationDescription').value,
-        status: document.getElementById('associationStatus').value
-    };
-
-    const associationId = document.getElementById('associationId').value;
-
     try {
+        const associationData = {
+            name: document.getElementById('associationName').value,
+            description: document.getElementById('associationDescription').value,
+            status: document.getElementById('associationStatus').value
+        };
+
+        const associationId = document.getElementById('associationId').value;
+
         if (associationId) {
             await axios.put(`/api/associations/${associationId}`, associationData);
         } else {
             await axios.post('/api/associations', associationData);
         }
+
         bootstrap.Modal.getInstance(document.getElementById('associationModal')).hide();
+        document.getElementById('associationForm').reset();
         loadAssociations();
     } catch (error) {
-        alert('Error saving association');
+        console.error('Error guardando asociación:', error);
+        alert('Error al guardar asociación');
     }
 }
 
 async function deleteAssociation(associationId) {
-    if (confirm('Are you sure you want to delete this association?')) {
-    try {
+    if (confirm('¿Está seguro de que desea eliminar esta asociación?')) {
+        try {
             await axios.delete(`/api/associations/${associationId}`);
             loadAssociations();
         } catch (error) {
-            alert('Error deleting association');
+            console.error('Error eliminando asociación:', error);
+            alert('Error al eliminar asociación');
         }
     }
 }
 
-// Orders Management
+// Gestión de Órdenes
 async function loadOrders() {
     try {
         const response = await axios.get('/api/orders');
         currentOrders = response.data;
         renderOrders();
     } catch (error) {
-        alert('Error loading orders');
+        console.error('Error cargando órdenes:', error);
+        alert('Error al cargar órdenes');
     }
 }
 
@@ -179,11 +186,11 @@ function renderOrders() {
     tbody.innerHTML = currentOrders.map(order => `
         <tr>
             <td>${order._id}</td>
-            <td>${order.user_id?.name || 'Unknown'}</td>
+            <td>${order.user_id?.name || 'Desconocido'}</td>
             <td>$${calculateOrderTotal(order).toFixed(2)}</td>
             <td>${order.status}</td>
             <td>
-                <button class="btn btn-sm btn-primary" onclick="updateOrderStatus('${order._id}')">Update Status</button>
+                <button class="btn btn-sm btn-primary" onclick="updateOrderStatus('${order._id}')">Actualizar Estado</button>
             </td>
         </tr>
     `).join('');
@@ -194,15 +201,16 @@ function calculateOrderTotal(order) {
 }
 
 async function updateOrderStatus(orderId) {
-    const newStatus = prompt('Enter new status (pending, processing, completed, cancelled):');
+    const newStatus = prompt('Ingrese el nuevo estado (pending, processing, completed, cancelled):');
     if (newStatus && ['pending', 'processing', 'completed', 'cancelled'].includes(newStatus)) {
         try {
             await axios.put(`/api/orders/${orderId}`, { status: newStatus });
             loadOrders();
         } catch (error) {
-            alert('Error updating order status');
+            console.error('Error actualizando estado de orden:', error);
+            alert('Error al actualizar estado de orden');
         }
     } else if (newStatus) {
-        alert('Invalid status. Please use: pending, processing, completed, or cancelled');
+        alert('Estado no válido');
     }
 } 
