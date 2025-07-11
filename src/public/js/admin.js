@@ -5,25 +5,60 @@ let currentOrders = [];
 
 // Cargar datos cuando la página se carga
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Cargando datos iniciales...');
     loadProducts();
     loadAssociations();
     loadOrders();
+
+    // Configurar el evento para limpiar el formulario cuando se abre el modal
+    document.getElementById('productModal').addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const isEdit = button.getAttribute('data-edit');
+        
+        if (!isEdit) {
+            // Si es nuevo producto, limpiar el formulario
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+        }
+    });
+
+    // Configurar el evento para limpiar el formulario cuando se abre el modal de asociación
+    document.getElementById('associationModal').addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const isEdit = button.getAttribute('data-edit');
+        
+        if (!isEdit) {
+            // Si es nueva asociación, limpiar el formulario
+            document.getElementById('associationForm').reset();
+            document.getElementById('associationId').value = '';
+        }
+    });
 });
 
 // Gestión de Productos
 async function loadProducts() {
     try {
+        console.log('Solicitando productos...');
         const response = await axios.get('/api/products');
+        console.log('Productos recibidos:', response.data);
         currentProducts = response.data;
         renderProducts();
     } catch (error) {
         console.error('Error cargando productos:', error);
-        alert('Error al cargar productos');
+        if (error.response) {
+            console.error('Error response:', error.response.data);
+        }
+        alert('Error al cargar productos: ' + (error.response?.data?.error || error.message));
     }
 }
 
 function renderProducts() {
     const tbody = document.getElementById('productsTableBody');
+    if (!tbody) {
+        console.error('No se encontró el elemento productsTableBody');
+        return;
+    }
+    
     tbody.innerHTML = currentProducts.map(product => `
         <tr>
             <td>${product.name}</td>
@@ -31,14 +66,19 @@ function renderProducts() {
             <td>${product.stock}</td>
             <td>${product.status}</td>
             <td>
-                <button class="btn btn-sm btn-primary" onclick="editProduct('${product._id}')">Editar</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product._id}')">Eliminar</button>
+                <button class="btn btn-sm btn-primary" onclick="editProduct('${product._id}')" data-edit="true">
+                    Editar
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product._id}')">
+                    Eliminar
+                </button>
             </td>
         </tr>
     `).join('');
 }
 
 function editProduct(productId) {
+    console.log('Editando producto:', productId);
     const product = currentProducts.find(p => p._id === productId);
     if (product) {
         document.getElementById('productId').value = product._id;
@@ -54,6 +94,8 @@ function editProduct(productId) {
 }
 
 async function saveProduct() {
+    console.log('Guardando producto...');
+
     try {
         const productData = {
             name: document.getElementById('productName').value,
@@ -63,31 +105,59 @@ async function saveProduct() {
             status: document.getElementById('productStatus').value
         };
 
+        console.log('Datos del producto a guardar:', productData);
+
         const productId = document.getElementById('productId').value;
+        let response;
 
         if (productId) {
-            await axios.put(`/api/products/${productId}`, productData);
+            console.log('Actualizando producto existente:', productId);
+            response = await axios.put(`/api/products/${productId}`, productData);
         } else {
-            await axios.post('/api/products', productData);
+            console.log('Creando nuevo producto');
+            response = await axios.post('/api/products', productData);
         }
 
-        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-        document.getElementById('productForm').reset();
-        loadProducts();
+        console.log('Respuesta del servidor:', response.data);
+
+        if (response.status === 201 || response.status === 200) {
+            const modalElement = document.getElementById('productModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                console.error('No se pudo encontrar la instancia del modal');
+            }
+            
+            document.getElementById('productForm').reset();
+            await loadProducts();
+            alert('Producto guardado exitosamente');
+        } else {
+            throw new Error('Error al guardar el producto: respuesta inesperada del servidor');
+        }
     } catch (error) {
         console.error('Error guardando producto:', error);
-        alert('Error al guardar producto');
+        if (error.response) {
+            console.error('Error response:', error.response.data);
+        }
+        alert('Error al guardar el producto: ' + (error.response?.data?.error || error.message));
     }
 }
 
 async function deleteProduct(productId) {
     if (confirm('¿Está seguro de que desea eliminar este producto?')) {
         try {
-            await axios.delete(`/api/products/${productId}`);
-            loadProducts();
+            console.log('Eliminando producto:', productId);
+            const response = await axios.delete(`/api/products/${productId}`);
+            console.log('Respuesta del servidor:', response.data);
+            await loadProducts();
+            alert('Producto eliminado exitosamente');
         } catch (error) {
             console.error('Error eliminando producto:', error);
-            alert('Error al eliminar producto');
+            if (error.response) {
+                console.error('Error response:', error.response.data);
+            }
+            alert('Error al eliminar producto: ' + (error.response?.data?.error || error.message));
         }
     }
 }
@@ -112,8 +182,12 @@ function renderAssociations() {
             <td>${association.description}</td>
             <td>${association.status}</td>
             <td>
-                <button class="btn btn-sm btn-primary" onclick="editAssociation('${association._id}')">Editar</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteAssociation('${association._id}')">Eliminar</button>
+                <button class="btn btn-sm btn-primary" onclick="editAssociation('${association._id}')">
+                    Editar
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteAssociation('${association._id}')">
+                    Eliminar
+                </button>
             </td>
         </tr>
     `).join('');
@@ -190,7 +264,9 @@ function renderOrders() {
             <td>$${calculateOrderTotal(order).toFixed(2)}</td>
             <td>${order.status}</td>
             <td>
-                <button class="btn btn-sm btn-primary" onclick="updateOrderStatus('${order._id}')">Actualizar Estado</button>
+                <button class="btn btn-sm btn-primary" onclick="updateOrderStatus('${order._id}')">
+                    Actualizar Estado
+                </button>
             </td>
         </tr>
     `).join('');

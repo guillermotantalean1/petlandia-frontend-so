@@ -184,36 +184,81 @@ router.get("/admin", isAdmin, async (req, res) => {
 // Products
 router.get("/api/products", async (req, res) => {
     try {
-        const products = await ProductModel.find({});
+        const products = await ProductModel.find({}).sort('-createdAt');
         res.json(products);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Error obteniendo productos:', err);
+        res.status(500).json({ error: 'Error al obtener productos' });
     }
 });
 
 router.post("/api/products", isAdmin, async (req, res) => {
     try {
-        const product = await ProductModel.create(req.body);
+        const { name, description, price, stock, status } = req.body;
+        
+        // Validaciones básicas
+        if (!name || !description || !price || stock === undefined) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+        }
+
+        const product = await ProductModel.create({
+            name,
+            description,
+            price: Number(price),
+            stock: Number(stock),
+            status: status || 'active'
+        });
+
         res.status(201).json(product);
     } catch (err) {
+        console.error('Error creando producto:', err);
         res.status(400).json({ error: err.message });
     }
 });
 
 router.put("/api/products/:id", isAdmin, async (req, res) => {
     try {
-        const product = await ProductModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { name, description, price, stock, status } = req.body;
+        
+        // Validaciones básicas
+        if (!name || !description || !price || stock === undefined) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+        }
+
+        const product = await ProductModel.findByIdAndUpdate(
+            req.params.id,
+            {
+                name,
+                description,
+                price: Number(price),
+                stock: Number(stock),
+                status: status || 'active'
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
         res.json(product);
     } catch (err) {
+        console.error('Error actualizando producto:', err);
         res.status(400).json({ error: err.message });
     }
 });
 
 router.delete("/api/products/:id", isAdmin, async (req, res) => {
     try {
-        await ProductModel.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
+        const product = await ProductModel.findByIdAndDelete(req.params.id);
+        
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        res.json({ message: 'Producto eliminado exitosamente' });
     } catch (err) {
+        console.error('Error eliminando producto:', err);
         res.status(400).json({ error: err.message });
     }
 });

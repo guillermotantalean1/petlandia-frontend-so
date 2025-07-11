@@ -9,9 +9,10 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27020/petlan
 const connectDB = async () => {
     try {
         await mongoose.connect(MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000, // Timeout de 5 segundos
-            socketTimeoutMS: 45000, // Timeout de socket de 45 segundos
-            connectTimeoutMS: 10000, // Timeout de conexión de 10 segundos
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            connectTimeoutMS: 10000,
+            family: 4 // Forzar IPv4
         });
         console.log('✅ Conexión exitosa a MongoDB:', MONGODB_URI);
     } catch (err) {
@@ -29,6 +30,11 @@ mongoose.connection.on('error', err => {
         console.log('🔄 Intentando reconectar a MongoDB...');
         setTimeout(connectDB, 5000);
     }
+});
+
+// Manejar el evento de conexión exitosa
+mongoose.connection.once('open', () => {
+    console.log('✅ Conexión a MongoDB establecida y lista');
 });
 
 connectDB();
